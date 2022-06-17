@@ -3,6 +3,7 @@
 class Workout {
   date = new Date();
   id = (Date.now() + '').slice(-10);
+  click = 0;
 
   constructor(distance, duration, coords) {
     this.distance = distance;
@@ -18,6 +19,10 @@ class Workout {
     this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
       months[this.date.getMonth()]
     } ${this.date.getDate()}`;
+  }
+
+  clicks() {
+    this.click++;
   }
 }
 
@@ -65,12 +70,14 @@ class App {
   coords;
   #workouts = [];
   #map;
+  #zoomLevel = 13;
   #mapEvent;
 
   constructor() {
     this._getPosition();
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
+    containerWorkouts.addEventListener('click', this._moveMap.bind(this));
   }
 
   _getPosition() {
@@ -90,7 +97,7 @@ class App {
     this.coords = [latitude, longitude];
     // console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
 
-    this.#map = L.map('map').setView(this.coords, 13);
+    this.#map = L.map('map').setView(this.coords, this.#zoomLevel);
 
     L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
       attribution:
@@ -241,6 +248,23 @@ class App {
         </li>`;
     }
     form.insertAdjacentHTML('afterend', html);
+  }
+
+  _moveMap(e) {
+    const workoutEL = e.target.closest('.workout');
+    if (!workoutEL) return;
+    const targetWorkout = this.#workouts.find(work => {
+      return work.id === workoutEL.dataset.id;
+    });
+
+    this.#map.setView(targetWorkout.coords, this.#zoomLevel, {
+      animate: true,
+      pan: {
+        duration: 1,
+      },
+    });
+    targetWorkout.clicks();
+    console.log(targetWorkout);
   }
 }
 
