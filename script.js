@@ -185,7 +185,9 @@ class App {
           closeOnClick: false,
         })
       )
-      .setPopupContent('worked out here!')
+      .setPopupContent(
+        `${workout.type === 'running' ? '🏃‍♂️' : '🚴‍♀️'} ${workout.description}`
+      )
       .openPopup();
   }
 
