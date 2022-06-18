@@ -75,6 +75,7 @@ class App {
 
   constructor() {
     this._getPosition();
+    this._getLocalStorage();
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveMap.bind(this));
@@ -105,6 +106,10 @@ class App {
     }).addTo(this.#map);
 
     this.#map.on('click', this._showForm.bind(this));
+
+    this.#workouts.forEach(work => {
+      this._renderWorkoutMarker(work);
+    });
   }
 
   _showForm(mapEvt) {
@@ -178,6 +183,8 @@ class App {
     this._renderWorkoutList(workout);
     //hide the form and clean input fields
     this._hideForm();
+    //store workout in localStorage
+    this._setLocalStorage();
   }
 
   _renderWorkoutMarker(workout) {
@@ -264,7 +271,30 @@ class App {
       },
     });
     targetWorkout.clicks();
-    console.log(targetWorkout);
+    // console.log(targetWorkout);
+  }
+
+  _setLocalStorage() {
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+  }
+
+  _getLocalStorage() {
+    const localWorkouts = JSON.parse(localStorage.getItem('workouts'));
+    // console.log(localWorkouts);
+    if (!localWorkouts) return;
+
+    //assign objects parse from JSON back to the class chain.
+    localWorkouts.forEach(lw => {
+      let obj;
+      if (lw.type === 'running') obj = new Running();
+      if (lw.type === 'cycling') obj = new Cycling();
+
+      Object.assign(obj, lw);
+      this.#workouts.push(obj);
+      console.log(this.#workouts);
+    });
+
+    this.#workouts.forEach(workout => this._renderWorkoutList(workout));
   }
 }
 
